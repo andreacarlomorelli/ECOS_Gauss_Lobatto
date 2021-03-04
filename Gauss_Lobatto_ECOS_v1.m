@@ -1,6 +1,8 @@
 %% Convex Optimization fuel-optimal transfer with Gauss - Lobatto quadrature rule and ECOS
 clc; clear all; 
 
+% Add description of the script
+
 %% Problem parameters
 
 % Transfer-related data load from function
