@@ -1,7 +1,9 @@
 %% Convex Optimization fuel-optimal transfer with Gauss - Lobatto quadrature rule and ECOS
 clc; clear all; 
 
-% Add description of the script
+% This script implements the Legendre-Gauss-Lobatto discretization scheme
+% applied to the low-thrust convex optimization problem and uses the ECOS
+% solver to solve it.
 
 %% Problem parameters
 
