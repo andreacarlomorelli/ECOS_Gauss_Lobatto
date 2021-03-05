@@ -111,7 +111,7 @@ paraECOS.G_lowerb_xf = zeros(n-1, sol_len);
 
 % Relaxed initial/final position
 x0 = paraSCP.x0(paraSCP.e,:);
-xf = auxdata.xf;
+xf = paraSCP.xf(paraSCP.e,:);
 
 paraECOS.h_upperb_x0 = x0' + auxdata.eps_x0;
 paraECOS.h_lowerb_x0 = - x0' + auxdata.eps_x0;

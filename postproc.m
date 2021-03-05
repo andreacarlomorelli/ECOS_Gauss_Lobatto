@@ -30,7 +30,7 @@ n = 7;
 m = 4;
 
 % auxdata parameters
-tf = auxdata.tf;
+tf = paraSCP.tf_final;
 
 % GL parameters
 nc = paraGL.nc;

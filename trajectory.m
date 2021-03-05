@@ -31,6 +31,7 @@ function [paraECOS, paraSCP, paraTRAJ, paraGL, auxdata] = trajectory(paraECOS, p
 % auxdata parameters
 tf = auxdata.tf;
 ni = auxdata.ni;
+nf = auxdata.nf;
 
 % GL parameters
 np = paraGL.np;
@@ -48,9 +49,10 @@ paraTRAJ.Ni_iter = zeros(Nseg,1);
 paraTRAJ.nr_iter = zeros(Nseg,1);
 
 % SCP initialisation parameters
-paraSCP.x0 = zeros(Nseg, ni); paraSCP.x0(1, :) = auxdata.x0;  
+paraSCP.x0 = zeros(Nseg, ni); paraSCP.x0(1, :) = auxdata.x0;
+paraSCP.xf = zeros(Nseg, nf); paraSCP.xf(1, :) = auxdata.xf;
 paraTRAJ.nr_iter(1) = round(N/Nseg); paraTRAJ.sw_nodes = zeros(Nseg,1); 
-TOF_iter = 0; paraTRAJ.h_vect = h; h_iter = h; tf_iter = tf;
+TOF_iter = 0; paraTRAJ.h_vect = h; h_iter = h; tf_iter = tf; 
 
 % Initial guess phi and phi_hat
 [paraECOS, paraGL, paraSCP, auxdata] = get_phi_initial_guess(paraECOS, paraGL, paraSCP, auxdata, paraSCP.x_old);
@@ -61,6 +63,7 @@ for e = 1 : Nseg
     
     % Initialisation parameters
     paraSCP.r_tr = paraSCP.r0*e;
+    dtf = tf/(100*e);
 
     % Number of segments and nodes at iteration e
     paraTRAJ.Ni_iter(e) = round(Ni/(Nseg - e + 1));
@@ -88,7 +91,18 @@ for e = 1 : Nseg
         
         paraSCP.x_old = interp1(paraTRAJ.t_vect(:,e), x(:,:), ...
             linspace(TOF_iter, tf, N));
-        
+
+        % Propagation of the planets' state
+        [~,state_planet] = ode113(@f_planet, [tf_iter tf_iter + dtf], paraSCP.xf(e,:)');
+
+        tf_iter = tf_iter + dtf;
+
+        paraSCP.tf_final = tf_iter;
+
+        paraSCP.xf(e+1,1) = state_planet(end,1); paraSCP.xf(e+1,2) = state_planet(end,2);
+        paraSCP.xf(e+1,3) = state_planet(end,3); paraSCP.xf(e+1,4) = state_planet(end,4);
+        paraSCP.xf(e+1,5) = state_planet(end,5); paraSCP.xf(e+1,6) = state_planet(end,6);
+     
         % (Perturbed) initial BCs for next step
         paraSCP.x0(e + 1, 1 : 3) = paraSCP.x_old(1, 1 : 3) + (1e8/auxdata.units.R0) - (2e8/auxdata.units.R0)*rand(1, 3);
         paraSCP.x0(e + 1, 4 : 6) = paraSCP.x_old(1, 4 : 6) + (1e3/auxdata.units.V0) - (2e3/auxdata.units.R0)*rand(1, 3);

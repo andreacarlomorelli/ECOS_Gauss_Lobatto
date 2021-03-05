@@ -156,7 +156,7 @@ hc_v(virtual_ctrl_len + 3 : virtual_ctrl_len + virtual_tau_len) = ...
 
 % Evaluation of the boundary conditions conditions constraints
 hc_v(end-(ni+nf)+1 : end) = [x(1,1 : n) - paraSCP.x0(paraSCP.e,:), x(end,1 : n-1) - ...
-    auxdata.xf];
+    paraSCP.xf(paraSCP.e,:)];
 
 % GC_V is the vector of INEQUALITY CONSTRAINTS of the original
 % nonconvex, nonlinear problem
