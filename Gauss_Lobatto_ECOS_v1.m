@@ -3,9 +3,8 @@ clc; clear all;
 
 % This script implements the Legendre-Gauss-Lobatto discretization scheme
 % applied to the low-thrust convex optimization problem and uses the ECOS
-% solver to solve it.
-
-% This is an example.
+% solver to solve it. Moreover, the dynamics have been linearized such that
+% we allow for time variation.
 
 %% Problem parameters
 
