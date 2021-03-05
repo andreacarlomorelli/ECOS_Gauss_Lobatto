@@ -5,8 +5,6 @@ clc; clear all;
 % applied to the low-thrust convex optimization problem and uses the ECOS
 % solver to solve it.
 
-% Test different repositories on another PC
-
 %% Problem parameters
 
 % Transfer-related data load from function
