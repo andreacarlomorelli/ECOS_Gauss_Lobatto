@@ -63,7 +63,7 @@ for e = 1 : Nseg
     
     % Initialisation parameters
     paraSCP.r_tr = paraSCP.r0*e;
-    dtf = 1e-9;
+    dtf = tf/(10*e);
 
     % Number of segments and nodes at iteration e
     paraTRAJ.Ni_iter(e) = round(Ni/(Nseg - e + 1));
@@ -97,11 +97,12 @@ for e = 1 : Nseg
 
         tf_iter = tf_iter + dtf;
 
-        paraSCP.xf(e+1,1) = state_planet(end,1); paraSCP.xf(e,2) = state_planet(end,2);
-        paraSCP.xf(e,3) = state_planet(end,3); paraSCP.xf(e,4) = state_planet(end,4);
-        paraSCP.xf(e,5) = state_planet(end,5); paraSCP.xf(e,6) = state_planet(end,6);
-     
+        paraSCP.tf_final = tf_iter;
 
+        paraSCP.xf(e+1,1) = state_planet(end,1); paraSCP.xf(e+1,2) = state_planet(end,2);
+        paraSCP.xf(e+1,3) = state_planet(end,3); paraSCP.xf(e+1,4) = state_planet(end,4);
+        paraSCP.xf(e+1,5) = state_planet(end,5); paraSCP.xf(e+1,6) = state_planet(end,6);
+     
         % (Perturbed) initial BCs for next step
         paraSCP.x0(e + 1, 1 : 3) = paraSCP.x_old(1, 1 : 3) + (1e8/auxdata.units.R0) - (2e8/auxdata.units.R0)*rand(1, 3);
         paraSCP.x0(e + 1, 4 : 6) = paraSCP.x_old(1, 4 : 6) + (1e3/auxdata.units.V0) - (2e3/auxdata.units.R0)*rand(1, 3);

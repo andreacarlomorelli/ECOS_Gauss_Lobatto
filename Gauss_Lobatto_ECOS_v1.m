@@ -1,5 +1,5 @@
 %% Convex Optimization fuel-optimal transfer with Gauss - Lobatto quadrature rule and ECOS
-clc; clear all; 
+clc; clear all; close all
 
 % This script implements the Legendre-Gauss-Lobatto discretization scheme
 % applied to the low-thrust convex optimization problem and uses the ECOS
@@ -8,7 +8,7 @@ clc; clear all;
 %% Problem parameters
 
 % Transfer-related data load from function
-transfer = 3;
+transfer = 2;
 if transfer == 1
     auxdata = Earth_Mars_parameters;
 elseif transfer == 2
@@ -21,7 +21,7 @@ end
 auxdata = bounds(auxdata);
 
 % Number of trajectory segments
-paraSCP.Nseg = 2;
+paraSCP.Nseg = 7;
 
 % Gauss-Lobatto method order
 paraGL.ng = input('Number of Gauss - Lobatto points: ');
@@ -223,12 +223,12 @@ err_vw = abs(vw_c - vw_rec);
 err_z = abs(z_c - z_rec);
 
 % Errors w.r.t the final boundary conditions
-x_bound = abs(xvar_rec(end) - auxdata.xf(1));
-y_bound = abs(y_rec(end) - auxdata.xf(2));
-w_bound = abs(w_rec(end) - auxdata.xf(3));
-vx_bound = abs(vx_rec(end) - auxdata.xf(4));
-vy_bound = abs(vy_rec(end) - auxdata.xf(5));
-vw_bound = abs(vw_rec(end) - auxdata.xf(6));
+x_bound = abs(xvar_rec(end) - paraSCP.xf(end,1));
+y_bound = abs(y_rec(end) - paraSCP.xf(end,2));
+w_bound = abs(w_rec(end) - paraSCP.xf(end,3));
+vx_bound = abs(vx_rec(end) - paraSCP.xf(end,4));
+vy_bound = abs(vy_rec(end) - paraSCP.xf(end,5));
+vw_bound = abs(vw_rec(end) - paraSCP.xf(end,6));
 
 % Average boundary errors
 bound_pos = mean([x_bound, y_bound, w_bound])
