@@ -72,7 +72,7 @@ for e = 1 : Nseg
 
     [paraECOS, paraGL, paraSCP, auxdata] = get_constant_matrices(paraECOS, paraGL, paraSCP, auxdata);
     
-    [paraECOS, paraGL, paraSCP, x, x_old, time, J0] = ECOS_SCP(paraECOS, paraGL, paraSCP, auxdata);
+    [paraECOS, paraGL, paraSCP, paraECOS.ecos_result, x, x_old, time, J0] = ECOS_SCP(paraECOS, paraGL, paraSCP, auxdata);
     
     % Solution at iteration e
     paraTRAJ.x(:,:,e) = x;

@@ -1,4 +1,4 @@
-function [paraECOS, paraGL, auxdata] = get_constant_T_Tu(paraECOS, paraGL, auxdata)
+function [paraECOS, paraGL, auxdata] = get_constant_T_Tu_Th(paraECOS, paraGL, auxdata)
 %
 % get_constant_T_Tu
 % 
@@ -24,6 +24,8 @@ m = 4;
 
 % ECOS parameters
 len_vect = paraECOS.len_vect;
+x_len = len_vect(1);
+u_len = len_vect(2);
 sol_len = len_vect(11);
 
 % GL parameters
@@ -89,9 +91,13 @@ for i = 1 : Ni
     
 end
 
+Th = zeros(1, sol_len);
+Th(end) = 1;
+
 auxdata.trans.T = T;
 auxdata.trans.T_cost = T;
 auxdata.trans.Tu = Tu;
+auxdata.trans.Th = Th;
 
 end
 

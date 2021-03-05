@@ -33,9 +33,6 @@ np = paraGL.np;
 Ni = paraGL.Ni;
 N = paraGL.N;
 
-% SCP parameters
-h = paraSCP.h;
-
 % Useful parameters
 c = auxdata.engine.c;
 ve = auxdata.engine.ve;
@@ -61,8 +58,6 @@ PHI_p_matrix = auxdata.phi.PHI_p_matrix;
 PHIu_matrix = auxdata.phi.PHIu_matrix;
 PHIpn_matrix_end = auxdata.phi.PHIpn_matrix_end;
 PHIun_matrix_end = auxdata.phi.PHIun_matrix_end;
-weights_c_matrix = auxdata.trans.weights_c_matrix;
-weights_n_matrix = auxdata.trans.weights_n_matrix;
 
 % Call T and Tu
 T_cost = auxdata.trans.T_cost;
@@ -94,9 +89,9 @@ for i = 1 : Ni
 end
 
 % Building constant parts of the A matrix
-A_dynamics_1(:, :) = A_dynamics_1(:, :) + PHIpn_matrix_1*T_cost(1 : 2*np*n, :) - h * 0.5 * (B(c,ve,V0)*PHIun_matrix_1*Tu(1 : np*m, :));
-A_dynamics_c(:,:) = A_dynamics_c + PHI_p_matrix*T_cost - h * 0.5 * (B_dyn*PHIu_matrix*Tu);
-A_dynamics_end(:, :) = A_dynamics_end(1 : n, :) + PHIpn_matrix_end*T_cost(end - 2*np*n + 1 : end, :) - h * 0.5 * (B(c, ve, V0)*PHIun_matrix_end*Tu(end - np*m + 1 : end, :));
+A_dynamics_1(:, :) = A_dynamics_1(:, :) + PHIpn_matrix_1*T_cost(1 : 2*np*n, :);
+A_dynamics_c(:,:) = A_dynamics_c + PHI_p_matrix*T_cost;
+A_dynamics_end(:, :) = A_dynamics_end(1 : n, :) + PHIpn_matrix_end*T_cost(end - 2*np*n + 1 : end, :);
 
 % Saving A matrix components
 paraECOS.A_dynamics_1_cost = A_dynamics_1;
@@ -257,14 +252,14 @@ paraECOS.h_socc_control = zeros(u_len_c + 2*m, 1);
 %%%%%% 8 : Constant parts of the trust region %%%%%%
 
 % matrix/vector for the constraint 1^T * aux_trust <= rk
-paraECOS.G_trust = zeros(N, sol_len);
-paraECOS.h_trust = zeros(N,1);
+paraECOS.G_trust = zeros(N + 1, sol_len);
+paraECOS.h_trust = zeros(N + 1,1);
 
 % matrices/vectors for -aux_trust-x_k <= -x_k_ref and x_k - aux_trust <= x_k_ref
-paraECOS.G_trust_x_slack1 = zeros(aux_trust_x_len, sol_len);
-paraECOS.G_trust_x_slack2 = zeros(aux_trust_x_len, sol_len);
-paraECOS.h_trust_x_slack1 = zeros(aux_trust_x_len,1);
-paraECOS.h_trust_x_slack2 = zeros(aux_trust_x_len,1);
+paraECOS.G_trust_x_slack1 = zeros(aux_trust_x_len + 1, sol_len);
+paraECOS.G_trust_x_slack2 = zeros(aux_trust_x_len + 1, sol_len);
+paraECOS.h_trust_x_slack1 = zeros(aux_trust_x_len + 1,1);
+paraECOS.h_trust_x_slack2 = zeros(aux_trust_x_len + 1,1);
 
 aux_trust_x_start = x_len + u_len + virtual_ctrl_len + ...
     aux_virtual_ctrl_len + virtual_tau_len + aux_virtual_tau_len;
@@ -285,6 +280,14 @@ for i=1:N % we consider all points
     % 1^T * aux_trust <= rk
     paraECOS.G_trust(i, aux_trust_x_start+n*(i-1)+1:aux_trust_x_start+n*i) = ones(1,n);
     
+    paraECOS.G_trust_x_slack1(N*n + 1, end) = -1;
+    paraECOS.G_trust_x_slack1(N*n + 1, end-1) = -1;
+    
+    paraECOS.G_trust_x_slack2(N*n + 1, end) = 1;
+    paraECOS.G_trust_x_slack2(N*n + 1, end-1) = -1;
+    
+    paraECOS.G_trust(N + 1, end-1) = 1;
+    
 end
 
 % Objective function c_objective
@@ -301,14 +304,6 @@ objective_c(aux_vc_start+1:aux_vc_start+aux_virtual_ctrl_len) = paraSCP.muc * on
 aux_tau_start = x_len + u_len + virtual_ctrl_len + aux_virtual_ctrl_len;
 
 objective_c(aux_tau_start+1:aux_tau_start+aux_virtual_tau_len) = paraSCP.lambda * ones(aux_virtual_tau_len, 1);
-
-% Maximize final mass
-obj_coll_points = sum(weights_c_matrix*PHIu_matrix*Tu,1);
-obj_coll_points = obj_coll_points(x_len+1:x_len+u_len)';
-obj_node_points = sum(weights_n_matrix*Tu,1);
-obj_node_points = obj_node_points(x_len+1:x_len+u_len)';
-
-objective_c(x_len+1:x_len+u_len) = h * 0.5 * (obj_coll_points + obj_node_points);
 
 paraECOS.objective_c = objective_c;
 

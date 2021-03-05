@@ -1,5 +1,5 @@
 %% Convex Optimization fuel-optimal transfer with Gauss - Lobatto quadrature rule and ECOS
-clc; clear all; 
+clc; clear all; close all
 
 % This script implements the Legendre-Gauss-Lobatto discretization scheme
 % applied to the low-thrust convex optimization problem and uses the ECOS
@@ -22,7 +22,7 @@ end
 auxdata = bounds(auxdata);
 
 % Number of trajectory segments
-paraSCP.Nseg = 5;
+paraSCP.Nseg = 1;
 
 % Gauss-Lobatto method order
 paraGL.ng = input('Number of Gauss - Lobatto points: ');
@@ -72,7 +72,7 @@ t_vect_aux = linspace(0,tf, Ni + 1); % Auxiliary time vector for time step defin
 % Time step
 paraSCP.h = t_vect_aux(2) - t_vect_aux(1);
 h = paraSCP.h;
-
+h
 %% Initialization of the SCP algorithm parameters
 
 % Penalty weights
@@ -108,7 +108,7 @@ else
 end
 
 % Initial guess
-inguess = 2; % 1 for Cubic - based, 2 for FFS
+inguess = 1; % 1 for Cubic - based, 2 for FFS
 nrev = input('How many revolutions do you want to consider for your initial guess? ');
 auxdata.Ta_max = 100; % Maximum thrust for FFS initial guess
 
@@ -126,6 +126,9 @@ paraSCP.iter_max = 500;
 % auxiliary variables for virtual controls, ...
 % virtual tau, auxiliary variables for virtual tau, ...
 % auxiliary variables for trust region]
+
+% Time variable
+t_len = 1;
 
 % State variables
 x_len = n*N;
@@ -154,17 +157,17 @@ slack_ineq_len = virtual_ctrl_len + aux_virtual_ctrl_len + virtual_tau_len + aux
 aux_trust_x_len = x_len;
 
 % Total length of the vector: 
-sol_len = x_len + u_len + virtual_ctrl_len + aux_virtual_ctrl_len + virtual_tau_len + aux_virtual_tau_len + aux_trust_x_len;
+sol_len = 2*t_len + x_len + u_len + virtual_ctrl_len + aux_virtual_ctrl_len + virtual_tau_len + aux_virtual_tau_len + aux_trust_x_len;
 
 % Vector of lengths
 paraECOS.len_vect = [x_len, u_len, x_len_c, u_len_c, virtual_tau_len, virtual_ctrl_len, aux_virtual_ctrl_len, aux_virtual_tau_len, slack_ineq_len, aux_trust_x_len, sol_len];
 
 % Generation of the constant parts of the martices T and Tu
-[paraECOS, paraGL, auxdata] = get_constant_T_Tu(paraECOS, paraGL, auxdata);
+[paraECOS, paraGL, auxdata] = get_constant_T_Tu_Th(paraECOS, paraGL, auxdata);
 
 % Generation of the varying parts of the matrices T and Tu
 [paraECOS, paraGL, paraSCP, auxdata] = get_varying_T_Tu(x_guess, paraECOS, paraGL, paraSCP, auxdata);
-
+%%
 % Generation of the constant parts of the matrix G
 paraSCP.e = 1;
 [paraECOS, paraGL, paraSCP, auxdata] = get_constant_matrices(paraECOS, paraGL, paraSCP, auxdata);

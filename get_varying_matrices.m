@@ -45,7 +45,8 @@ np = paraGL.np;
 Ni = paraGL.Ni;
 
 % SCP parameters
-h = paraSCP.h;
+h_old = paraSCP.h;
+h_old
 
 % Useful parameters
 c = auxdata.engine.c;
@@ -62,15 +63,24 @@ sol_len = len_vect(11);
 PHI_c = sparse(paraGL.PHI_c);
 PHI_matrix = sparse(auxdata.phi.PHI_matrix);
 PHI_p_matrix = sparse(auxdata.phi.PHI_p_matrix);
+PHIu_matrix = sparse(auxdata.phi.PHIu_matrix);
 PHIpn_matrix_1 = sparse(auxdata.phi.PHIpn_matrix_1);
 PHIn_matrix_1 = sparse(auxdata.phi.PHIn_matrix_1);
+PHIun_matrix_1 = sparse(auxdata.phi.PHIun_matrix_1);
 PHIpn_matrix_end = sparse(auxdata.phi.PHIpn_matrix_end);
 PHIn_matrix_end = sparse(auxdata.phi.PHIn_matrix_end);
+PHIun_matrix_end = sparse(auxdata.phi.PHIun_matrix_end);
+weights_c_matrix = auxdata.trans.weights_c_matrix;
+weights_n_matrix = auxdata.trans.weights_n_matrix;
 
 % Transformation matrices and vectors
 T = sparse(auxdata.trans.T);
+Tu = sparse(auxdata.trans.Tu);
+Th = sparse(auxdata.trans.Th);
 T_cost = sparse(auxdata.trans.T_cost);
 As = paraECOS.As;
+fs = paraECOS.fs;
+B_dyn = paraECOS.B_dyn;
 
 % Vectors b_old_assembly, b_cost_assembly and f_dyn and matrix A_dyn
 A_dyn = zeros(x_len_c);
@@ -86,9 +96,8 @@ for j = 1 : Ni
     b_old(1 : np,:) = x_old((j - 1) * (np - 1) + 1 : j * (np - 1) + 1, 1 : n);
     b_cost(1 : np,:) = zeros(np,n);
     for i = 1 : np
-        b_old(np + i, :) = 0.5 * h * f_quad(x_n_old(i,:), u_n_old(i,:), c, ve, V0);
-        b_cost(np + i, :) = 0.5* h * (f(x_n_old(i,:)) - ...
-            A(x_n_old(i,:)) * x_n_old(i,:)');
+        b_old(np + i, :) = 0.5 * h_old * f_quad(x_n_old(i,:), u_n_old(i,:), c, ve, V0);
+        b_cost(np + i, :) =  -0.5 * h_old * A(x_n_old(i,:)) * x_n_old(i,:)';
     end
     b_old_assembly((j-1)*2*np*n + 1 : ...
         (j-1)*2*np*n + 2*np*n) = reshape(b_old,2*np*n,1);
@@ -104,6 +113,7 @@ for j = 1 : Ni
         f_dyn((j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n) = f_par;  
     end
 end
+paraECOS.f_dyn = f_dyn;
 
 A_dyn = sparse(A_dyn);
 
@@ -118,23 +128,31 @@ A_dynamics_end_cost = sparse(paraECOS.A_dynamics_end_cost);
 % Selecting only the varying part of T
 T_var = T - T_cost;
 
-A_dynamics_1 = A_dynamics_1_cost + PHIpn_matrix_1*T_var(1 : 2*np*n, :) - h * 0.5 * sparse(As(:,:,1))*PHIn_matrix_1*T(1 : 2*np*n, :);
-A_dynamics_c = A_dynamics_c_cost + PHI_p_matrix*T_var - h * 0.5 * (A_dyn*PHI_matrix*T);
-A_dynamics_end = A_dynamics_end_cost + PHIpn_matrix_end*T_var(end - 2*np*n + 1 : end, :) - h * 0.5 * sparse(As(:,:,end))*PHIn_matrix_end*T(end - 2*np*n + 1 : end, :);
+A_dynamics_1 = A_dynamics_1_cost + PHIpn_matrix_1*T_var(1 : 2*np*n, :) - ...
+    h_old * 0.5 * (sparse(As(:,:,1))*PHIn_matrix_1*T(1 : 2*np*n, :) + ...
+    B(c,ve,V0)*PHIun_matrix_1*Tu(1 : np*m, :)) - ...
+    0.5 * fs(:,1) * Th;
+A_dynamics_c = A_dynamics_c_cost + PHI_p_matrix*T_var - ...
+    h_old * 0.5 * (A_dyn*PHI_matrix*T + B_dyn*PHIu_matrix*Tu) - ...
+    0.5 * f_dyn * Th;
+A_dynamics_end = A_dynamics_end_cost + PHIpn_matrix_end*T_var(end - 2*np*n + 1 : end, :) - ...
+    h_old * 0.5 * (sparse(As(:,:,end))*PHIn_matrix_end*T(end - 2*np*n + 1 : end, :) + ...
+    B(c, ve, V0)*PHIun_matrix_end*Tu(end - np*m + 1 : end, :)) - ...
+    0.5 * fs(:,end) * Th;
 
 paraECOS.A_dynamics = [A_dynamics_1; A_dynamics_c; A_dynamics_end];
 
 paraECOS.A_dyn_c = A_dynamics_c;
 
 b_dynamics_1 = -PHIpn_matrix_1*b_cost_assembly(1 : 2*np*n) + ...
-    h * 0.5 * (f(x_old(1,1:n)) + A(x_old(1,1:n))*(PHIn_matrix_1*...
+    h_old * 0.5 * (A(x_old(1,1:n))*(PHIn_matrix_1*...
     b_cost_assembly(1 : 2*np*n) - x_old(1, 1 : n)'));
 
-b_dynamics = -PHI_p_matrix*b_cost_assembly + h * 0.5 * (f_dyn + ...
-    sparse(A_dyn)*PHI_matrix*(b_cost_assembly - b_old_assembly));
+b_dynamics = -PHI_p_matrix*b_cost_assembly + h_old * 0.5 * ...
+    (sparse(A_dyn)*PHI_matrix*(b_cost_assembly - b_old_assembly));
 
 b_dynamics_end = -PHIpn_matrix_end*b_cost_assembly(end - 2*np*n + 1 : end) ...
-    + h * 0.5 * (f(x_old(end,1:n)) + A(x_old(end,1:n))*(PHIn_matrix_end*...
+    + h_old * 0.5 * (A(x_old(end,1:n))*(PHIn_matrix_end*...
     b_cost_assembly(end - 2*np*n + 1 : end) - x_old(end, 1 : n)'));
 
 paraECOS.b_dynamics = [b_dynamics_1; b_dynamics; b_dynamics_end];
@@ -185,6 +203,18 @@ paraECOS.h_upperb_tau = [D_1 + 1e-7 - z_unit*PHIn_matrix_1*b_cost_assembly(1 : 2
 paraECOS.h_lowerb_tau = [1 - z_unit*PHIn_matrix_1*b_cost_assembly(1 : 2*np*n); ...
     1 - z_matrix_select*PHI_matrix*b_cost_assembly; ...
    1 - z_unit*PHIn_matrix_end*b_cost_assembly(end - 2*np*n + 1 : end)];
+
+% Maximize final mass
+objective_c = paraECOS.objective_c;
+
+obj_coll_points = sum(weights_c_matrix*PHIu_matrix*Tu,1);
+obj_coll_points = obj_coll_points(x_len+1:x_len+u_len)';
+obj_node_points = sum(weights_n_matrix*Tu,1);
+obj_node_points = obj_node_points(x_len+1:x_len+u_len)';
+
+objective_c(x_len+1:x_len+u_len) =  h_old * 0.5 * (obj_coll_points + obj_node_points);
+
+paraECOS.objective_c = objective_c;
 
 end
 

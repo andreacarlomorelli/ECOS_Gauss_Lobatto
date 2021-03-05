@@ -42,7 +42,7 @@ Ni = paraGL.Ni;
 N = paraGL.N;
 
 % SCP parameters
-h = paraSCP.h;
+h_old = paraSCP.h;
 
 % Useful parameters
 c = auxdata.engine.c;
@@ -51,10 +51,14 @@ V0 = auxdata.units.V0;
 
 % Matrix A for all the nodes
 As = zeros(n,n,N);
+fs = zeros(n,N);
+
 for i = 1 : N
     As(:,:,i) = A(x_old(i,1:7));
+    fs(:,i) = f(x_old(i,1:7));
 end
 paraECOS.As = As;
+paraECOS.fs = fs;
 
 % Matrix B
 Bs = B(c, ve, V0);
@@ -67,8 +71,8 @@ for i = 1 : Ni
         Abig = zeros(np,n*np);
         Bbig = zeros(np,m*np);
         for j = 1 : np
-            Abig(j, (j-1)*n + 1 : j*n) = h*0.5*As(k,:,(i - 1) * (np - 1) + j);
-            Bbig(j, (j-1)*m + 1 : j*m) = h*0.5*Bs(k,:);  
+            Abig(j, (j-1)*n + 1 : j*n) = h_old*0.5*As(k,:,(i - 1) * (np - 1) + j);
+            Bbig(j, (j-1)*m + 1 : j*m) = h_old*0.5*Bs(k,:);  
         end
         T((i-1)*2*np*n + 2*(k-1)*np + np + 1: (i-1)*2*np*n + ...
             2*(k-1)*np + 2*np, (i-1)*n*np - (i-1)*n + 1 : i*n*np - (i-1)*n) = Abig;
