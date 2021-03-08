@@ -36,11 +36,6 @@ N = paraGL.N;
 % SCP parameters
 h = paraSCP.h;
 
-% Useful parameters
-c = auxdata.engine.c;
-ve = auxdata.engine.ve;
-V0 = auxdata.units.V0;
-
 % Length of the variables
 x_len = len_vect(1);
 u_len = len_vect(2);

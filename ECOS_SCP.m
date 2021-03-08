@@ -265,7 +265,8 @@ for k = 0 : 10
     J0 = J0_vect*ecos_result
 
     [paraECOS, paraGL, paraSCP, auxdata, hc_v, gc_v] = get_nonlinear_constr_viol(ecos_result, x_old, paraECOS, paraGL, paraSCP, auxdata);
-    abs(hc_v(1 : virtual_ctrl_len))
+    hc_v(1 : virtual_ctrl_len);
+    
     % Sequential Convex Programming algorithm
     % Predicted objective function change
     phi_hat = J0 + lambda*sum(max(0, hc_v(virtual_ctrl_len + 1 : ...

@@ -102,9 +102,11 @@ for j = 1 : Ni
     b_cost_assembly((j-1)*2*np*n + 1 : ...
         (j-1)*2*np*n + 2*np*n) = reshape(b_cost,2*np*n,1);
     for i = 1 : nc
+        
         A_par = A(PHI_c(i,:)*b_old);
         B_par = B(PHI_c(i,:)*b_old, c, ve, V0);
         f_par = f(PHI_c(i,:)*b_old);
+        
         % A_dyn
         A_dyn((j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n, ...
             (j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n) = A_par;
@@ -113,6 +115,7 @@ for j = 1 : Ni
             (j-1)*m*nc + (i-1)*m + 1 : (j-1)*m*nc + (i-1)*m + m) = B_par;
         % f_lyn
         f_dyn((j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n) = f_par;  
+        
     end
 end
 
