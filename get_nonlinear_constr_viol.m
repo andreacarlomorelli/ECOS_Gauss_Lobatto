@@ -106,7 +106,7 @@ for j = 1 : Ni
     bu_vect = u_n;
     for i = 1 : np
         b_vect(np + i, :) = 0.5 * h * (f(x_n_old(i,:)) + A(x_n_old(i,:)) * ...
-            (x_n(i,:)' - x_n_old(i,:)') + B(c, ve, V0)*u_n(i,:)');
+            (x_n(i,:)' - x_n_old(i,:)') + B(x_n_old(i,:), c, ve, V0)*u_n(i,:)');
     end
     b_assembly((j-1)*2*np*n + 1 : ...
         (j-1)*2*np*n + 2*np*n) = reshape(b_vect,2*np*n,1);
@@ -155,7 +155,7 @@ hc_v(virtual_ctrl_len + 3 : virtual_ctrl_len + virtual_tau_len) = ...
     (tau_select*PHIu_matrix*bu_assembly).^2;
 
 % Evaluation of the boundary conditions conditions constraints
-hc_v(end-(ni+nf)+1 : end) = [x(1,1 : n) - paraSCP.x0(paraSCP.e,:), x(end,1 : n-1) - ...
+hc_v(end-(ni+nf)+1 : end) = [x(1,1 : n) - paraSCP.x0(paraSCP.e,:), x(end,1 : n-2) - ...
     paraSCP.xf(paraSCP.e,:)];
 
 % GC_V is the vector of INEQUALITY CONSTRAINTS of the original

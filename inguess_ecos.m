@@ -27,20 +27,20 @@ x0 = auxdata.x0;
 xf = auxdata.xf;
 
 % Cubic - based initial guess
-[x_guess_SB, x_guess_cyl_SB] = SB_guess(N, x0, xf, nrev, auxdata);
+[x_guess_SB, x_guess_SB_cyl] = SB_guess(N, x0, xf, nrev, auxdata);
 
 % FFS - based initial guess
 if inguess == 2
     ncoeff = 10;
-    [x_guess_FFS] = FFS_guess(N, ncoeff, x_guess_cyl_SB, auxdata);
-    x_guess_FFS(:,7) = x_guess_SB(:,7);
+    [x_guess_FFS, x_guess_FFS_cyl] = FFS_guess(N, ncoeff, x_guess_SB_cyl, auxdata);
+    x_guess_FFS_cyl(:,7) = x_guess_SB_cyl(:,7);
 end
 
 % Choice of the initial guess
 if inguess == 1
-    x_guess = x_guess_SB;
+    x_guess = x_guess_SB_cyl;
 else
-    x_guess = x_guess_FFS;
+    x_guess = x_guess_FFS_cyl;
 end
 
 function [x_guess, x_guess_cyl] = SB_guess(m_guess, x0, xf, nrev, auxdata)
@@ -77,11 +77,13 @@ c = auxdata.engine.c;
 tf = auxdata.tf;
 ve = auxdata.engine.ve;
 V0 = auxdata.units.V0;
+th_0 = auxdata.th_0;
+th_f = auxdata.th_f + 2*nrev*pi;
 
 % Normalized time vector & time step
 t_ad = linspace(0,1, m_guess);
-t_aux = linspace(0,tf, m_guess);
-h = t_aux(2) - t_aux(1);
+th_aux = linspace(th_0, th_f, m_guess);
+h = th_aux(2) - th_aux(1);
 
 % Initial and final states
 x_0 = x0(1); y_0 = x0(2); vx_0 = x0(4); vy_0 = x0(5);
@@ -172,14 +174,26 @@ for i = 1 : m_guess-1
     z(i+1) = z(i) + h*(-c/(ve/V0))*tau(i);
 end
 
+% Time history first guess
+t = zeros(1,m_guess);
+t(1) = 0;
+for i = 1 : m_guess-1
+    t(i+1) = t(i) + h*r(i)/thdot(i);
+end
+
 % Cartesian initial guess
 x_guess = [xvar' y' w' vx' vy' vw' z' taux' tauy' tauw' tau'];
 
 % Cylindrical initial guess
-x_guess_cyl = [r' th' w' rdot' thdot' vw'];
+x_guess_cyl = [r' w' rdot' thdot' vw' t' z' r2dot' th2dot' aw' tau'];
+
+% First guess plot
+figure
+polarplot(th,r,'b','LineWidth',1)
+grid on
 
 end
-function [x_guess] = FFS_guess(m_guess, ncoeff, x_guess_cyl, auxdata)
+function [x_guess, x_guess_cyl] = FFS_guess(m_guess, ncoeff, x_guess_cyl, auxdata)
 %
 % FFS_guess
 % 
@@ -209,6 +223,7 @@ tf = auxdata.tf;
 ve = auxdata.engine.ve;
 V0 = auxdata.units.V0;
 Ta_max = auxdata.Ta_max;
+th_f = auxdata.th_f + 2*nrev*pi;
 
 % Auxiliary functions definition
 function A = A_FFS(n, m, tau)
@@ -510,8 +525,8 @@ end
 
 % Normalized time vector & time step
 t_ad = linspace(0,1,m_guess);
-t_aux = linspace(0,tf,m_guess);
-h = t_aux(2) - t_aux(1);
+th_aux = linspace(0,th_f,m_guess);
+h = th_aux(2) - th_aux(1);
 
 % BCs settings
 r_0 = x_guess_cyl(1,1);
@@ -665,18 +680,18 @@ for i = 1 : m_guess - 1
     z(i+1) = z(i) + h*(-1/(ve/V0))*tau(i);
 end
 
+% Time history first guess
+t = zeros(1,m_guess);
+t(1) = 0;
+
+for i = 1 : m_guess-1
+    t(i+1) = t(i) + h*r(i)/thdot(i);
+end
+
+x_guess_cyl = [r w rdot thdot wdot t' z' Tr Tth Tw tau];
 x_guess = [xvar y w vx vy vw z' taux tauy tauw tau];
 
 end
-
-% First guess plot
-figure
-hold all
-plot3(x_guess(:,1),x_guess(:,2),x_guess(:,3),'b','LineWidth',1)
-xlabel('[AU]')
-ylabel('[AU]')
-zlabel('[AU]')
-grid on
 
 
 end

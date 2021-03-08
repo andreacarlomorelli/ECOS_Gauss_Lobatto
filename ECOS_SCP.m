@@ -171,8 +171,8 @@ h_trust_x_slack2_indices = h_trust_x_slack2_start+1:h_trust_x_slack2_end;
 % ECOS opts
 opts.VERBOSE = 0;
 
-while cmax >= epsc
-    
+%while cmax >= epsc   
+for k = 0 : 10
     % Get varying parts of matrices T and Tu
     [paraECOS, paraGL, paraSCP, auxdata] = get_varying_T_Tu(x_old, paraECOS, paraGL, paraSCP, auxdata);
     
@@ -265,7 +265,7 @@ while cmax >= epsc
     J0 = J0_vect*ecos_result
 
     [paraECOS, paraGL, paraSCP, auxdata, hc_v, gc_v] = get_nonlinear_constr_viol(ecos_result, x_old, paraECOS, paraGL, paraSCP, auxdata);
-    
+    abs(hc_v(1 : virtual_ctrl_len))
     % Sequential Convex Programming algorithm
     % Predicted objective function change
     phi_hat = J0 + lambda*sum(max(0, hc_v(virtual_ctrl_len + 1 : ...
@@ -301,11 +301,6 @@ while cmax >= epsc
     elseif dphi < 0 && dphi_hat > 0
         rho = -1;
         dphi = 1;
-    end
-    
-    %  At the first iteration, the solution is always accepted without changing the trust region radius
-    if k == 0
-        rho = rho1;
     end
     
     % Update of alpha and beta: adaptive trust region radius update

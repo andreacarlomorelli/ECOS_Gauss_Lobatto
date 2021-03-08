@@ -30,7 +30,8 @@ n = 7;
 m = 4;
 
 % auxdata parameters
-tf = paraSCP.tf_final;
+th_f = auxdata.th_f;
+nrev = auxdata.nrev;
 
 % GL parameters
 nc = paraGL.nc;
@@ -69,7 +70,7 @@ paraTRAJ.x_g = zeros(nc*Ni_tot + 2 + (Nseg - 1), n + m);
 paraTRAJ.x_g(end, :) = paraTRAJ.x(end, :,end);
 paraTRAJ.t_g = zeros(nc*Ni_tot + 2 + (Nseg - 1),1);
 paraTRAJ.t_g(1,1) = 0;
-paraTRAJ.t_g(end,1) = tf;
+paraTRAJ.t_g(end,1) = th_f + 2*nrev*pi;
 
 for e = 1 : Nseg
     

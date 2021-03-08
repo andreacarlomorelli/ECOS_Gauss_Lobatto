@@ -108,7 +108,7 @@ auxdata.th_f = th_f;
 inguess = 1; % 1 for Cubic - based, 2 for FFS
 nrev = input('How many revolutions do you want to consider for your initial guess? ');
 auxdata.Ta_max = 100; % Maximum thrust for FFS initial guess
-auxdata.nrev = nrev;
+paraTRAJ.nrev = nre
 
 [x_guess] = inguess_ecos(N, nrev, inguess, auxdata);
 paraSCP.x_old = x_guess;
@@ -127,8 +127,8 @@ vy_f = vv_f(2); vw_f = vv_f(3);
 vr_0 = (x_0*vx_0 + y_0*vy_0)/sqrt(x_0^2 + y_0^2);
 vr_f = (x_f*vx_f + y_f*vy_f)/sqrt(x_f^2 + y_f^2);
 
-vth_0 = (x_0*vy_0 - y_0*vx_0)/(x_0^2 + y_0^2);
-vth_f = (x_f*vy_f - y_f*vx_f)/(x_f^2 + y_f^2);
+vth_0 = (x_0*vy_0 - y_0*vx_0)/sqrt(x_0^2 + y_0^2);
+vth_f = (x_f*vy_f - y_f*vx_f)/sqrt(x_f^2 + y_f^2);
 
 auxdata.x0 = [r_0 w_0 vr_0 vth_0 vw_0 0 0];
 auxdata.xf = [r_f w_f vr_f vth_f vw_f];
@@ -256,6 +256,7 @@ y_bound = abs(y_rec(end) - paraSCP.xf(end,2));
 w_bound = abs(w_rec(end) - paraSCP.xf(end,3));
 vx_bound = abs(vx_rec(end) - paraSCP.xf(end,4));
 vy_bound = abs(vy_rec(end) - paraSCP.xf(end,5));
+vw_bound = abs(vw_rec(end) - paraSCP.xf(end,6));
 
 % Average boundary errors
 bound_pos = mean([x_bound, y_bound, w_bound])

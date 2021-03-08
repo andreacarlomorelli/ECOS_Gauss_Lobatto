@@ -44,7 +44,7 @@ c = auxdata.engine.c;
 ve = auxdata.engine.ve;
 V0 = auxdata.units.V0;
 
-Bm = B(c, ve, V0);
+Bm = B(x_old, c, ve, V0);
 
 % Vector of constants terms: first part, 1 : np
 b_old = zeros(2*np, n);

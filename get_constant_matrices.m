@@ -70,17 +70,6 @@ Tu = auxdata.trans.Tu;
 
 %%%%%% 1 : Adding slack variables to the A matrix %%%%%%
 
-% Get constant B_dyn matrix
-B_dyn = zeros(x_len_c,u_len_c);
-
-for j = 1 : Ni
-    for i = 1 : nc
-        B_dyn((j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n, ...
-            (j-1)*m*nc + (i-1)*m + 1 : (j-1)*m*nc + (i-1)*m + m) = B(c, ve, V0);
-    end
-end
-paraECOS.B_dyn = B_dyn;
-
 % Matrices initialization
 A_dynamics_1 = zeros(n, sol_len);
 A_dynamics_c = zeros(x_len_c, sol_len);
@@ -94,9 +83,9 @@ for i = 1 : Ni
 end
 
 % Building constant parts of the A matrix
-A_dynamics_1(:, :) = A_dynamics_1(:, :) + PHIpn_matrix_1*T_cost(1 : 2*np*n, :) - h * 0.5 * (B(c,ve,V0)*PHIun_matrix_1*Tu(1 : np*m, :));
-A_dynamics_c(:,:) = A_dynamics_c + PHI_p_matrix*T_cost - h * 0.5 * (B_dyn*PHIu_matrix*Tu);
-A_dynamics_end(:, :) = A_dynamics_end(1 : n, :) + PHIpn_matrix_end*T_cost(end - 2*np*n + 1 : end, :) - h * 0.5 * (B(c, ve, V0)*PHIun_matrix_end*Tu(end - np*m + 1 : end, :));
+A_dynamics_1(:, :) = A_dynamics_1(:, :) + PHIpn_matrix_1*T_cost(1 : 2*np*n, :);
+A_dynamics_c(:,:) = A_dynamics_c + PHI_p_matrix*T_cost;
+A_dynamics_end(:, :) = A_dynamics_end(1 : n, :) + PHIpn_matrix_end*T_cost(end - 2*np*n + 1 : end, :);
 
 % Saving A matrix components
 paraECOS.A_dynamics_1_cost = A_dynamics_1;
@@ -106,8 +95,8 @@ paraECOS.A_dynamics_end_cost = A_dynamics_end;
 %%%%%% 2 : Relaxed boundary constraints of x0 and xf %%%%%%
 paraECOS.G_upperb_x0 = zeros(n, sol_len);
 paraECOS.G_lowerb_x0 = zeros(n, sol_len);
-paraECOS.G_upperb_xf = zeros(n-1, sol_len);
-paraECOS.G_lowerb_xf = zeros(n-1, sol_len);
+paraECOS.G_upperb_xf = zeros(n-2, sol_len);
+paraECOS.G_lowerb_xf = zeros(n-2, sol_len);
 
 % Relaxed initial/final position
 x0 = paraSCP.x0(paraSCP.e,:);
@@ -121,8 +110,8 @@ paraECOS.h_lowerb_xf = - xf' + auxdata.eps_xf;
 % Matrices for initial/final position
 paraECOS.G_upperb_x0(1:n, 1:n) = eye(n);
 paraECOS.G_lowerb_x0(1:n, 1:n) = -1*eye(n);
-paraECOS.G_upperb_xf(1:n-1, n*(N-1)+1:n*N-1) = eye(n-1);
-paraECOS.G_lowerb_xf(1:n-1, n*(N-1)+1:n*N-1) = -1*eye(n-1);
+paraECOS.G_upperb_xf(1:n-2, n*(N-1)+1:n*N-2) = eye(n-2);
+paraECOS.G_lowerb_xf(1:n-2, n*(N-1)+1:n*N-2) = -1*eye(n-2);
 
 %%%%%% 3 : Bounds on x and u %%%%%%
 G_upperb_bounds = zeros(x_len+u_len, sol_len);

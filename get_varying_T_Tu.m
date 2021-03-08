@@ -49,15 +49,15 @@ c = auxdata.engine.c;
 ve = auxdata.engine.ve;
 V0 = auxdata.units.V0;
 
-% Matrix A for all the nodes
+% Matrices A and B for all the nodes
 As = zeros(n,n,N);
+Bs = zeros(n,m,N);
 for i = 1 : N
     As(:,:,i) = A(x_old(i,1:7));
+    Bs(:,:,i) = B(x_old(i,1:7),c, ve, V0);
 end
 paraECOS.As = As;
-
-% Matrix B
-Bs = B(c, ve, V0);
+paraECOS.Bs = Bs;
 
 % T matrices
 T = auxdata.trans.T;
@@ -68,7 +68,7 @@ for i = 1 : Ni
         Bbig = zeros(np,m*np);
         for j = 1 : np
             Abig(j, (j-1)*n + 1 : j*n) = h*0.5*As(k,:,(i - 1) * (np - 1) + j);
-            Bbig(j, (j-1)*m + 1 : j*m) = h*0.5*Bs(k,:);  
+            Bbig(j, (j-1)*m + 1 : j*m) = h*0.5*Bs(k,:,(i - 1) * (np - 1) + j);  
         end
         T((i-1)*2*np*n + 2*(k-1)*np + np + 1: (i-1)*2*np*n + ...
             2*(k-1)*np + 2*np, (i-1)*n*np - (i-1)*n + 1 : i*n*np - (i-1)*n) = Abig;

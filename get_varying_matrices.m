@@ -56,24 +56,31 @@ V0 = auxdata.units.V0;
 x_len = len_vect(1);
 u_len = len_vect(2);
 x_len_c = len_vect(3);
+u_len_c = len_vect(4);
 sol_len = len_vect(11);
 
 % PHI matrices
 PHI_c = sparse(paraGL.PHI_c);
 PHI_matrix = sparse(auxdata.phi.PHI_matrix);
 PHI_p_matrix = sparse(auxdata.phi.PHI_p_matrix);
+PHIu_matrix = sparse(auxdata.phi.PHIu_matrix);
 PHIpn_matrix_1 = sparse(auxdata.phi.PHIpn_matrix_1);
 PHIn_matrix_1 = sparse(auxdata.phi.PHIn_matrix_1);
+PHIun_matrix_1 = sparse(auxdata.phi.PHIun_matrix_1);
 PHIpn_matrix_end = sparse(auxdata.phi.PHIpn_matrix_end);
 PHIn_matrix_end = sparse(auxdata.phi.PHIn_matrix_end);
+PHIun_matrix_end = sparse(auxdata.phi.PHIun_matrix_end);
 
 % Transformation matrices and vectors
 T = sparse(auxdata.trans.T);
+Tu = sparse(auxdata.trans.Tu);
 T_cost = sparse(auxdata.trans.T_cost);
 As = paraECOS.As;
+Bs = paraECOS.Bs;
 
 % Vectors b_old_assembly, b_cost_assembly and f_dyn and matrix A_dyn
 A_dyn = zeros(x_len_c);
+B_dyn = zeros(x_len_c, u_len_c);
 f_dyn = zeros(x_len_c,1);
 b_old_assembly = zeros(2*x_len_c,1);
 b_cost_assembly = zeros(2*x_len_c,1);
@@ -96,16 +103,21 @@ for j = 1 : Ni
         (j-1)*2*np*n + 2*np*n) = reshape(b_cost,2*np*n,1);
     for i = 1 : nc
         A_par = A(PHI_c(i,:)*b_old);
+        B_par = B(PHI_c(i,:)*b_old, c, ve, V0);
         f_par = f(PHI_c(i,:)*b_old);
         % A_dyn
         A_dyn((j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n, ...
             (j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n) = A_par;
+        % B_dyn
+        B_dyn((j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n, ...
+            (j-1)*m*nc + (i-1)*m + 1 : (j-1)*m*nc + (i-1)*m + m) = B_par;
         % f_lyn
         f_dyn((j-1)*n*nc + (i-1)*n + 1 : (j-1)*n*nc + (i-1)*n + n) = f_par;  
     end
 end
 
 A_dyn = sparse(A_dyn);
+B_dyn = sparse(B_dyn);
 
 paraECOS.b_cost_assembly = b_cost_assembly;
 paraECOS.b_old_assembly = b_old_assembly;
@@ -118,9 +130,9 @@ A_dynamics_end_cost = sparse(paraECOS.A_dynamics_end_cost);
 % Selecting only the varying part of T
 T_var = T - T_cost;
 
-A_dynamics_1 = A_dynamics_1_cost + PHIpn_matrix_1*T_var(1 : 2*np*n, :) - h * 0.5 * sparse(As(:,:,1))*PHIn_matrix_1*T(1 : 2*np*n, :);
-A_dynamics_c = A_dynamics_c_cost + PHI_p_matrix*T_var - h * 0.5 * (A_dyn*PHI_matrix*T);
-A_dynamics_end = A_dynamics_end_cost + PHIpn_matrix_end*T_var(end - 2*np*n + 1 : end, :) - h * 0.5 * sparse(As(:,:,end))*PHIn_matrix_end*T(end - 2*np*n + 1 : end, :);
+A_dynamics_1 = A_dynamics_1_cost + PHIpn_matrix_1*T_var(1 : 2*np*n, :) - h * 0.5 * sparse(As(:,:,1))*PHIn_matrix_1*T(1 : 2*np*n, :) - h * 0.5 * (sparse(Bs(:,:,1))*PHIun_matrix_1*Tu(1 : np*m, :));
+A_dynamics_c = A_dynamics_c_cost + PHI_p_matrix*T_var - h * 0.5 * (A_dyn*PHI_matrix*T) - h * 0.5 * (B_dyn*PHIu_matrix*Tu);
+A_dynamics_end = A_dynamics_end_cost + PHIpn_matrix_end*T_var(end - 2*np*n + 1 : end, :) - h * 0.5 * sparse(As(:,:,end))*PHIn_matrix_end*T(end - 2*np*n + 1 : end, :) - h * 0.5 * (sparse(Bs(:,:,end))*PHIun_matrix_end*Tu(end - np*m + 1 : end, :));
 
 paraECOS.A_dynamics = [A_dynamics_1; A_dynamics_c; A_dynamics_end];
 

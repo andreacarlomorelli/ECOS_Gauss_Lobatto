@@ -29,9 +29,11 @@ function [paraECOS, paraSCP, paraTRAJ, paraGL, auxdata] = trajectory(paraECOS, p
 %
 
 % auxdata parameters
-tf = auxdata.tf;
+th_f = auxdata.th_f;
+th_0 = auxdata.th_0;
 ni = auxdata.ni;
 nf = auxdata.nf;
+nrev = auxdata.nrev;
 
 % GL parameters
 np = paraGL.np;
@@ -40,8 +42,8 @@ N = paraGL.N;
 
 Nseg = paraSCP.Nseg;
 
-paraTRAJ.t_vect(:,1) = linspace(0,tf,N); % Dimensionless time vector
-paraTRAJ.t_vect_aux(:,1) = linspace(0,tf, Ni + 1); % Auxiliary time vector for time step definition
+paraTRAJ.t_vect(:,1) = linspace(th_0,th_f + 2*nrev*pi,N); % Dimensionless time vector
+paraTRAJ.t_vect_aux(:,1) = linspace(th_0,th_f + 2*nrev*pi, Ni + 1); % Auxiliary time vector for time step definition
 h = paraTRAJ.t_vect_aux(2,1) - paraTRAJ.t_vect_aux(1,1); % Time step
 
 % Initialization of the output parameters
@@ -52,7 +54,8 @@ paraTRAJ.nr_iter = zeros(Nseg,1);
 paraSCP.x0 = zeros(Nseg, ni); paraSCP.x0(1, :) = auxdata.x0;
 paraSCP.xf = zeros(Nseg, nf); paraSCP.xf(1, :) = auxdata.xf;
 paraTRAJ.nr_iter(1) = round(N/Nseg); paraTRAJ.sw_nodes = zeros(Nseg,1); 
-TOF_iter = 0; paraTRAJ.h_vect = h; h_iter = h; tf_iter = tf; 
+TOF_iter = 0; paraTRAJ.h_vect = h; h_iter = h; th_f_iter = th_f; 
+paraSCP.th_f_final = th_f;
 
 % Initial guess phi and phi_hat
 [paraECOS, paraGL, paraSCP, auxdata] = get_phi_initial_guess(paraECOS, paraGL, paraSCP, auxdata, paraSCP.x_old);
@@ -93,11 +96,11 @@ for e = 1 : Nseg
             linspace(TOF_iter, tf, N));
 
         % Propagation of the planets' state
-        [~,state_planet] = ode113(@f_planet, [tf_iter tf_iter + dtf], paraSCP.xf(e,:)');
+        [~,state_planet] = ode113(@f_planet, [th_f_iter th_f_iter + dtf], paraSCP.xf(e,:)');
 
-        tf_iter = tf_iter + dtf;
+        th_f_iter = th_f_iter + dtf;
 
-        paraSCP.tf_final = tf_iter;
+        paraSCP.tf_final = th_f_iter;
 
         paraSCP.xf(e+1,1) = state_planet(end,1); paraSCP.xf(e+1,2) = state_planet(end,2);
         paraSCP.xf(e+1,3) = state_planet(end,3); paraSCP.xf(e+1,4) = state_planet(end,4);
@@ -108,8 +111,8 @@ for e = 1 : Nseg
         paraSCP.x0(e + 1, 4 : 6) = paraSCP.x_old(1, 4 : 6) + (1e3/auxdata.units.V0) - (2e3/auxdata.units.R0)*rand(1, 3);
         paraSCP.x0(e + 1, 7) = paraSCP.x_old(1, 7);
 
-        paraTRAJ.t_vect(:,e + 1) = linspace(TOF_iter, tf_iter, N);
-        paraTRAJ.t_vect_aux(:, e + 1) = linspace(TOF_iter, tf_iter, Ni + 1);
+        paraTRAJ.t_vect(:,e + 1) = linspace(TOF_iter, th_f_iter, N);
+        paraTRAJ.t_vect_aux(:, e + 1) = linspace(TOF_iter, th_f_iter, Ni + 1);
         h_iter = paraTRAJ.t_vect_aux(2, e + 1) - ...
             paraTRAJ.t_vect_aux(1, e + 1);
         paraTRAJ.h_vect(e + 1) = h_iter;
