@@ -53,6 +53,9 @@ paraSCP.x0 = zeros(Nseg, ni); paraSCP.x0(1, :) = auxdata.x0;
 paraSCP.xf = zeros(Nseg, nf); paraSCP.xf(1, :) = auxdata.xf;
 paraTRAJ.nr_iter(1) = round(N/Nseg); paraTRAJ.sw_nodes = zeros(Nseg,1); 
 TOF_iter = 0; paraTRAJ.h_vect = h; h_iter = h; tf_iter = tf; 
+paraSCP.tf_final = tf_iter;
+
+pert_magn_max = 1e8/auxdata.units.R0;
 
 % Initial guess phi and phi_hat
 [paraECOS, paraGL, paraSCP, auxdata] = get_phi_initial_guess(paraECOS, paraGL, paraSCP, auxdata, paraSCP.x_old);
@@ -63,7 +66,6 @@ for e = 1 : Nseg
     
     % Initialisation parameters
     paraSCP.r_tr = paraSCP.r0*e;
-    dtf = tf/(100*e);
 
     % Number of segments and nodes at iteration e
     paraTRAJ.Ni_iter(e) = round(Ni/(Nseg - e + 1));
@@ -90,9 +92,23 @@ for e = 1 : Nseg
         TOF_iter = TOF_iter + h_iter*paraTRAJ.Ni_iter(e);
         
         paraSCP.x_old = interp1(paraTRAJ.t_vect(:,e), x(:,:), ...
-            linspace(TOF_iter, tf, N));
+            linspace(TOF_iter, tf_iter, N));
+        
+        % (Perturbed) initial BCs for next step
+        pert_pos = (1e8/auxdata.units.R0) - (2e8/auxdata.units.R0)*rand(1, 3);
+        pert_vel = (1e3/auxdata.units.V0) - (2e3/auxdata.units.R0)*rand(1, 3);
+        
+        pert_magn = max(abs(pert_pos));
+        
+        pert_magn/pert_magn_max
+        
+        dtf = (tf/10)*(pert_magn/pert_magn_max);
+        
+        paraSCP.x0(e + 1, 1 : 3) = paraSCP.x_old(1, 1 : 3) + pert_pos;
+        paraSCP.x0(e + 1, 4 : 6) = paraSCP.x_old(1, 4 : 6) + pert_vel;
+        paraSCP.x0(e + 1, 7) = paraSCP.x_old(1, 7);
 
-        % Propagation of the planets' state
+        % Propagation of the planet's state
         [~,state_planet] = ode113(@f_planet, [tf_iter tf_iter + dtf], paraSCP.xf(e,:)');
 
         tf_iter = tf_iter + dtf;
@@ -102,11 +118,6 @@ for e = 1 : Nseg
         paraSCP.xf(e+1,1) = state_planet(end,1); paraSCP.xf(e+1,2) = state_planet(end,2);
         paraSCP.xf(e+1,3) = state_planet(end,3); paraSCP.xf(e+1,4) = state_planet(end,4);
         paraSCP.xf(e+1,5) = state_planet(end,5); paraSCP.xf(e+1,6) = state_planet(end,6);
-     
-        % (Perturbed) initial BCs for next step
-        paraSCP.x0(e + 1, 1 : 3) = paraSCP.x_old(1, 1 : 3) + (1e8/auxdata.units.R0) - (2e8/auxdata.units.R0)*rand(1, 3);
-        paraSCP.x0(e + 1, 4 : 6) = paraSCP.x_old(1, 4 : 6) + (1e3/auxdata.units.V0) - (2e3/auxdata.units.R0)*rand(1, 3);
-        paraSCP.x0(e + 1, 7) = paraSCP.x_old(1, 7);
 
         paraTRAJ.t_vect(:,e + 1) = linspace(TOF_iter, tf_iter, N);
         paraTRAJ.t_vect_aux(:, e + 1) = linspace(TOF_iter, tf_iter, Ni + 1);

@@ -304,9 +304,9 @@ while cmax >= epsc
     end
     
     %  At the first iteration, the solution is always accepted without changing the trust region radius
-    if k == 0
-        rho = rho1;
-    end
+%     if k == 0
+%         rho = rho1;
+%     end
     
     % Update of alpha and beta: adaptive trust region radius update
     if k > 0
