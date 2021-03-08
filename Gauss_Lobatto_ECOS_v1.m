@@ -8,7 +8,7 @@ clc; clear all; close all
 %% Problem parameters
 
 % Transfer-related data load from function
-transfer = 2;
+transfer = 3;
 if transfer == 1
     auxdata = Earth_Mars_parameters;
 elseif transfer == 2
@@ -21,7 +21,7 @@ end
 auxdata = bounds(auxdata);
 
 % Number of trajectory segments
-paraSCP.Nseg = 7;
+paraSCP.Nseg = 10;
 
 % Gauss-Lobatto method order
 paraGL.ng = input('Number of Gauss - Lobatto points: ');
