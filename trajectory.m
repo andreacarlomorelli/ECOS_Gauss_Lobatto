@@ -66,7 +66,7 @@ for e = 1 : Nseg
     
     % Initialisation parameters
     paraSCP.r_tr = paraSCP.r0*e;
-    dtf = tf/(100*e);
+    %dtf = tf/(100*e);
 
     % Number of segments and nodes at iteration e
     paraTRAJ.Ni_iter(e) = round(Ni/(Nseg - e + 1));
