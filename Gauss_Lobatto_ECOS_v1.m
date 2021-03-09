@@ -8,7 +8,7 @@ clc; clear all; close all
 %% Problem parameters
 
 % Transfer-related data load from function
-transfer = 1;
+transfer = 3;
 if transfer == 1
     auxdata = Earth_Mars_parameters;
 elseif transfer == 2
