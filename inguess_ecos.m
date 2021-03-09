@@ -185,7 +185,7 @@ end
 x_guess = [xvar' y' w' vx' vy' vw' z' taux' tauy' tauw' tau'];
 
 % Cylindrical initial guess
-x_guess_cyl = [r' w' rdot' thdot' vw' t' z' r2dot' th2dot' aw' tau'];
+x_guess_cyl = [r' w' rdot' r'.*thdot' vw' t' z' r2dot' th2dot' aw' tau'];
 
 % First guess plot
 figure
