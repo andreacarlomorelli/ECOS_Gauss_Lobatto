@@ -171,8 +171,7 @@ h_trust_x_slack2_indices = h_trust_x_slack2_start+1:h_trust_x_slack2_end;
 % ECOS opts
 opts.VERBOSE = 0;
 
-%while cmax >= epsc   
-for k = 0 : 10
+while cmax >= epsc
     % Get varying parts of matrices T and Tu
     [paraECOS, paraGL, paraSCP, auxdata] = get_varying_T_Tu(x_old, paraECOS, paraGL, paraSCP, auxdata);
     

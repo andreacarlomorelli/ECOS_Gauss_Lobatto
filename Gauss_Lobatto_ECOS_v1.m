@@ -95,7 +95,7 @@ if transfer == 2
     paraSCP.epsphi = 1e-2;
 else
     paraSCP.epsc = 1e-6;
-    paraSCP.epsphi = 1e-4;
+    paraSCP.epsphi = 1e-5;
 end
 
 % Convert initial and final BCs in spherical coordinates
@@ -127,11 +127,26 @@ vy_f = vv_f(2); vw_f = vv_f(3);
 vr_0 = (x_0*vx_0 + y_0*vy_0)/sqrt(x_0^2 + y_0^2);
 vr_f = (x_f*vx_f + y_f*vy_f)/sqrt(x_f^2 + y_f^2);
 
-vth_0 = (x_0*vy_0 - y_0*vx_0)/(x_0^2 + y_0^2);
-vth_f = (x_f*vy_f - y_f*vx_f)/(x_f^2 + y_f^2);
+thdot_0 = (x_0*vy_0 - y_0*vx_0)/(x_0^2 + y_0^2);
+thdot_f = (x_f*vy_f - y_f*vx_f)/(x_f^2 + y_f^2);
 
-auxdata.x0 = [r_0 w_0 vr_0 vth_0 vw_0 0 0];
-auxdata.xf = [r_f w_f vr_f vth_f vw_f];
+vth_0_cyl = r_0*thdot_0;
+vth_f_cyl = r_f*thdot_f;
+% 
+% vr_0_cyl = vr_0/vth_0_cyl*r_0;
+% vr_f_cyl = vr_f/vth_f_cyl*r_f;
+% 
+% vw_0_cyl = vw_0/vth_0_cyl*w_0;
+% vw_f_cyl = vw_f/vth_f_cyl*w_f;
+
+vr_0_cyl = vr_0;
+vr_f_cyl = vr_f;
+
+vw_0_cyl = vw_0;
+vw_f_cyl = vw_f;
+
+auxdata.x0 = [r_0 w_0 vr_0_cyl vth_0_cyl vw_0_cyl 0 0];
+auxdata.xf = [r_f w_f vr_f_cyl vth_f_cyl vw_f_cyl];
 paraSCP.x0 = auxdata.x0; paraSCP.xf = auxdata.xf;
 
 auxdata.ni = length(auxdata.x0);
@@ -259,7 +274,6 @@ vy_bound = abs(vy_rec(end) - paraSCP.xf(end,5));
 
 % Average boundary errors
 bound_pos = mean([x_bound, y_bound, w_bound])
-bound_vel = mean([vx_bound, vy_bound, vw_bound])
 
 %% Thrust plot
 
