@@ -16,6 +16,6 @@ function auxdata = bounds(auxdata)
 
 % Upper and lower bounds for state and control 
 auxdata.bounds.lb = [0.1 -10 -10 1e-5 -10 0 log(0.1) -10 -10 -10 0];
-auxdata.bounds.ub = [10 10 10 10 10 10 0 7.1 10 10 10];
+auxdata.bounds.ub = [10 10 10 10 10 6.5 0 10 10 10 10];
 
 end
