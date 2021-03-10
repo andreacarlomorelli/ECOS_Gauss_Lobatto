@@ -30,6 +30,7 @@ n = 7;
 m = 4;
 
 % auxdata parameters
+th_0 = auxdata.th_0;
 th_f = auxdata.th_f;
 nrev = auxdata.nrev;
 
@@ -68,21 +69,21 @@ paraTRAJ.u_c = zeros(nc*Ni + 2, m,Nseg);
 Ni_tot = sum(paraTRAJ.Ni_iter);
 paraTRAJ.x_g = zeros(nc*Ni_tot + 2 + (Nseg - 1), n + m);
 paraTRAJ.x_g(end, :) = paraTRAJ.x(end, :,end);
-paraTRAJ.t_g = zeros(nc*Ni_tot + 2 + (Nseg - 1),1);
-paraTRAJ.t_g(1,1) = 0;
-paraTRAJ.t_g(end,1) = th_f + 2*nrev*pi;
+paraTRAJ.th_g = zeros(nc*Ni_tot + 2 + (Nseg - 1),1);
+paraTRAJ.th_g(1,1) = th_0;
+paraTRAJ.th_g(end,1) = paraSCP.th_f_final;
 
 for e = 1 : Nseg
     
     h_rec = paraTRAJ.h_vect(e);
     
     % Time vector
-    paraTRAJ.t_vect_coll(1,e) = paraTRAJ.t_vect(1,e);
-    paraTRAJ.t_vect_coll(end,e) =  paraTRAJ.t_vect(end,e);
+    paraTRAJ.th_vect_coll(1,e) = paraTRAJ.th_vect(1,e);
+    paraTRAJ.th_vect_coll(end,e) =  paraTRAJ.th_vect(end,e);
     
     for j = 1 : Ni
-        paraTRAJ.t_vect_coll(2 + (j-1)*nc : 1 + j*nc, e) = paraGL.zeta*0.5*h_rec + ...
-            (paraTRAJ.t_vect_aux(j + 1,e) + paraTRAJ.t_vect_aux(j,e))*0.5;
+        paraTRAJ.th_vect_coll(2 + (j-1)*nc : 1 + j*nc, e) = paraGL.zeta*0.5*h_rec + ...
+            (paraTRAJ.th_vect_aux(j + 1,e) + paraTRAJ.th_vect_aux(j,e))*0.5;
     end
     
     % Nodal variables
@@ -126,8 +127,8 @@ for e = 1 : Nseg
         paraTRAJ.x_g(1 : nc*paraTRAJ.Ni_iter(e) + 1, :) = ...
             [paraTRAJ.x_c(1 : nc*paraTRAJ.Ni_iter(e) + 1,:,e) ...
             paraTRAJ.u_c(1 : nc*paraTRAJ.Ni_iter(e) + 1,:,e)];
-        paraTRAJ.t_g(1 : nc*paraTRAJ.Ni_iter(e) + 1, :) = ...
-            paraTRAJ.t_vect_coll(1 : nc*paraTRAJ.Ni_iter(e) + 1,e);
+        paraTRAJ.th_g(1 : nc*paraTRAJ.Ni_iter(e) + 1, :) = ...
+            paraTRAJ.th_vect_coll(1 : nc*paraTRAJ.Ni_iter(e) + 1,e);
        
         a = nc*paraTRAJ.Ni_iter(e) + 1;
     else
@@ -135,8 +136,8 @@ for e = 1 : Nseg
             a + 1 + nc*paraTRAJ.Ni_iter(e), :) = ...
             [paraTRAJ.x_c(1 : nc*paraTRAJ.Ni_iter(e) + 1,:,e) ...
             paraTRAJ.u_c(1 : nc*paraTRAJ.Ni_iter(e) + 1,:,e)];
-        paraTRAJ.t_g(a + 1 : a + 1 + ...
-            nc*paraTRAJ.Ni_iter(e)) = paraTRAJ.t_vect_coll...
+        paraTRAJ.th_g(a + 1 : a + 1 + ...
+            nc*paraTRAJ.Ni_iter(e)) = paraTRAJ.th_vect_coll...
             (1 : nc*paraTRAJ.Ni_iter(e) + 1,e);
         
         a = a + 1 + nc*paraTRAJ.Ni_iter(e);

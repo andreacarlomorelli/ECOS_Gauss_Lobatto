@@ -108,6 +108,7 @@ for e = 1 : Nseg
         paraSCP.xf(e+1,3) = state_planet_cyl(end,3); paraSCP.xf(e+1,4) = state_planet_cyl(end,4);
         paraSCP.xf(e+1,5) = state_planet_cyl(end,5);
         
+        paraSCP.xf(e+1,:)
         % (Perturbed) initial BCs for next step
         paraSCP.x0(e + 1, 1 : 2) = paraSCP.x_old(1, 1 : 2) + (1e8/auxdata.units.R0) - (2e8/auxdata.units.R0)*rand(1, 2);
         paraSCP.x0(e + 1, 3 : 5) = paraSCP.x_old(1, 3 : 5) + (1e3/auxdata.units.V0) - (2e3/auxdata.units.R0)*rand(1, 3);
