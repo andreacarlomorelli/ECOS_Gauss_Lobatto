@@ -281,14 +281,13 @@ bound_pos = mean([x_bound, y_bound, w_bound])
 figure
 T_c = exp(paraTRAJ.x_g(:,7)).*paraTRAJ.x_g(:,11);
 hold all
-plot(paraTRAJ.x_c(:,6),T_c,'k','LineWidth',2)
+plot(t_g,T_c,'k','LineWidth',2)
 grid on
-xlim([0, 6])
 
 figure
 hold all
-plot(taux_c)
-plot(tauy_c)
-plot(tauw_c)
-plot(tau_c)
+plot(t_g,taux_c)
+plot(t_g,tauy_c)
+plot(t_g,tauw_c)
+plot(t_g,tau_c)
  
