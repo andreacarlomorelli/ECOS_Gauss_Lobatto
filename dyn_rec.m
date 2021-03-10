@@ -34,17 +34,19 @@ taur = interp1(tvect,taur,t,'spline');
 tauth = interp1(tvect,tauth,t,'spline');
 tauw = interp1(tvect,tauw,t,'spline');
 
+s = sqrt(x(1).^2 + x(2).^2);
+
 dx = zeros(7,1);
 
 dx(1,:) = x(1,:)*x(3,:)/x(4,:);
 
 dx(2,:) = x(1,:)*x(5,:)/x(4,:);
 
-dx(3,:) = - 1/(x(1,:)*x(4,:)) + x(4,:) + c*x(1,:)/x(4,:)*taur;
+dx(3,:) = - x(1,:)^2/(s^3*x(4,:)) + x(4,:) + c*x(1,:)/x(4,:)*taur;
 
-dx(4,:) = - x(3,:) + c*x(1,:)/x(4,:)*tauth;
+dx(4,:) = -x(3) + c*x(1,:)/x(4,:)*tauth;
 
-dx(5,:) = - x(5,:)/(x(1,:)^2*x(4,:)) + c*x(1,:)/x(4,:)*tauw;
+dx(5,:) = -x(1)*x(2)/(s^3*x(4)) + c*x(1,:)/x(4,:)*tauw;
 
 dx(6,:) = x(1,:)/x(4,:);
 

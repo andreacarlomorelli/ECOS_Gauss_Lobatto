@@ -21,7 +21,7 @@ end
 auxdata = bounds(auxdata);
 
 % Number of trajectory segments
-paraSCP.Nseg = 8;
+paraSCP.Nseg = 1;
 
 % Gauss-Lobatto method order
 paraGL.ng = input('Number of Gauss - Lobatto points: ');
@@ -95,7 +95,7 @@ if transfer == 2
     paraSCP.epsphi = 1e-2;
 else
     paraSCP.epsc = 1e-6;
-    paraSCP.epsphi = 1e-5;
+    paraSCP.epsphi = 1e-3;
 end
 
 % Convert initial and final BCs in spherical coordinates
@@ -284,7 +284,7 @@ hold all
 plot(paraTRAJ.x_g(:,6)*(R0/V0)/(24*3600),T_c,'k','LineWidth',2)
 grid on
 xlim([0 paraTRAJ.x_c(end,6)*(R0/V0)/(24*3600)])
-
+3
 figure
 hold all
 plot(th_g,taur_c)

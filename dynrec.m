@@ -56,8 +56,8 @@ for e = 1 : Nseg % Loop for all the trajectory segments
     tauw = paraTRAJ.u_c(:,3,e); tau = paraTRAJ.u_c(:,4,e);
     
     % ode113
-    [~,paraTRAJ.x_rec(:,:,e)] = ode113(@dyn_rec, paraTRAJ.t_vect_coll(:,e), x0_rec, ...
-        options, c, ve, V0, paraTRAJ.t_vect_coll(:,e), tau, taux, tauy, tauw);
+    [~,paraTRAJ.x_rec(:,:,e)] = ode113(@dyn_rec, paraTRAJ.th_vect_coll(:,e), x0_rec, ...
+        options, c, ve, V0, paraTRAJ.th_vect_coll(:,e), tau, taux, tauy, tauw);
     
     % Global trajectory assembly
     if Nseg == 1

@@ -44,7 +44,7 @@ N = paraGL.N;
 Nseg = paraSCP.Nseg;
 
 % Time
-paraTRAJ.t_vect_coll = zeros(Ni*nc + 2, Nseg);
+paraTRAJ.th_vect_coll = zeros(Ni*nc + 2, Nseg);
 
 % Variables at nodes
 paraTRAJ.xvar = zeros(N, Nseg); paraTRAJ.y = zeros(N, Nseg);
