@@ -21,7 +21,7 @@ end
 auxdata = bounds(auxdata);
 
 % Number of trajectory segments
-paraSCP.Nseg = 9;
+paraSCP.Nseg = 8;
 
 % Gauss-Lobatto method order
 paraGL.ng = input('Number of Gauss - Lobatto points: ');

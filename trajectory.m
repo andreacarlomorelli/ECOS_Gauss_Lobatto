@@ -68,7 +68,7 @@ for e = 1 : Nseg
     paraSCP.r_tr = paraSCP.r0*e;
 
     % Number of segments and nodes at iteration e
-    paraTRAJ.Ni_iter(e) = round(Ni/(Nseg - e + 1));
+    paraTRAJ.Ni_iter(e) = round(Ni/((Nseg - e + 1)));
     paraTRAJ.nr_iter(e) = np + (np - 1)*(paraTRAJ.Ni_iter(e) - 1);
     
     % SCP algorithm
