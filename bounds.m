@@ -1,6 +1,6 @@
 function auxdata = bounds(auxdata)
 %
-% B
+% bounds
 % 
 % FUNCTION DESCRIPTION: this function defines the boundaries of the
 % variables
